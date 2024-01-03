@@ -1,9 +1,11 @@
 package org.ukrnastup.comments
 
-import BannedUser._
 import telegramium.bots.ChatId
-import java.time.ZonedDateTime
+
 import java.time.ZoneId
+import java.time.ZonedDateTime
+
+import BannedUser._
 
 final case class BannedUser(
     id: InnerId,

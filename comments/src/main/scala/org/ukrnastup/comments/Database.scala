@@ -1,15 +1,16 @@
 package org.ukrnastup.comments
 
-import doobie.Transactor
-import doobie.implicits.toConnectionIOOps
-import doobie.hikari.HikariTransactor
 import cats.effect.kernel.Resource
 import cats.{effect => ce}
-import doobie.util.ExecutionContexts
 import com.typesafe.config.ConfigFactory
+import doobie.Transactor
+import doobie.hikari.HikariTransactor
+import doobie.implicits.toConnectionIOOps
+import doobie.util.ExecutionContexts
 import telegramium.bots.ChatId
 import telegramium.bots.ChatIntId
 import telegramium.bots.ChatStrId
+
 import scala.annotation.nowarn
 
 object Database {
