@@ -1,7 +1,9 @@
 CREATE TABLE banned_users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  telegram_id INTEGER NOT NULL,
-  telegram_name TEXT,
+  id INTEGER PRIMARY KEY,
+  is_currently_banned BOOLEAN NOT NULL, -- records are kept forever for history, if true updated_at indicates time of last ban
+  is_channel BOOLEAN NOT NULL,
+  telegram_id INTEGER NOT NULL UNIQUE,
+  telegram_name TEXT NOT NULL,
   telegram_username TEXT,
   reason TEXT,
   banned_by TEXT,
