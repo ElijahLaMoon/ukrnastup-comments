@@ -7,9 +7,9 @@ import doobie.Transactor
 import doobie.hikari.HikariTransactor
 import doobie.implicits.toConnectionIOOps
 import doobie.util.ExecutionContexts
-import telegramium.bots.ChatId
-import telegramium.bots.ChatIntId
-import telegramium.bots.ChatStrId
+import fly4s.Fly4s
+import fly4s.data.Fly4sConfig
+import fly4s.data.Location
 
 import scala.annotation.nowarn
 
@@ -29,9 +29,6 @@ object Database {
     )
   } yield xa
 
-  import fly4s.core.Fly4s
-  import fly4s.core.data.Fly4sConfig
-  import fly4s.core.data.Location
   val migrateDb = Fly4s
     .make[ce.IO](
       url = url,
@@ -86,35 +83,11 @@ object schema {
   val ctx = new DoobieContext.SQLite(SnakeCase)
   import ctx._
 
-  @nowarn implicit val chatIdEncoder =
-    MappedEncoding[ChatId, Long] {
-      case ChatIntId(id) => id
-      case ChatStrId(id) =>
-        scala.util
-          .Try(id.toLong)
-          .getOrElse(
-            0L
-          ) // TODO: add logging probably, this path shouldn't be reached
-    }
-  @nowarn implicit val chatIdDecoder =
-    MappedEncoding[Long, ChatId](ChatIntId(_))
   @nowarn implicit val insertMetaBannedUsers =
     insertMeta[BannedUser](_.id)
+  @nowarn implicit val insertMetaAdmins =
+    insertMeta[Admin](_.id)
 
-  val bannedUsers = quote {
-    querySchema[BannedUser](
-      "banned_users",
-      _.id -> "id",
-      _.telegramId -> "telegram_id",
-      _.telegramName -> "telegram_name",
-      _.telegramUsername -> "telegram_username",
-      _.reason -> "reason",
-      _.bannedBy -> "banned_by",
-      _.bannedById -> "banned_by_id",
-      _.messageGotBannedFor -> "message_got_banned_for",
-      _.messageGotBannedForLink -> "message_got_banned_for_link",
-      _.createdAt -> "created_at",
-      _.updatedAt -> "updated_at"
-    )
-  }
+  val bannedUsers = quote(querySchema[BannedUser]("banned_users"))
+  val admins = quote(querySchema[Admin]("admins_cache"))
 }
