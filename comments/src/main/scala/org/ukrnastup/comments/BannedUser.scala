@@ -1,60 +1,63 @@
 package org.ukrnastup.comments
 
-import telegramium.bots.ChatId
-
-import java.time.ZoneId
 import java.time.ZonedDateTime
 
 import BannedUser._
 
 final case class BannedUser(
     id: InnerId,
+    isCurrentlyBanned: IsCurrentlyBanned,
+    isChannel: IsChannel,
     telegramId: TelegramUserId,
-    telegramName: Option[TelegramName],
+    telegramName: TelegramName,
     telegramUsername: Option[TelegramUsername],
-    reason: Option[BanReason],
-    bannedBy: Option[BannedBy],
-    bannedById: BannedByTelegramUserId,
+    reason: BanReason,
+    bannedBy: BannedBy,
+    bannedByTelegramId: BannedByTelegramUserId,
     messageGotBannedFor: Option[MessageGotBannedFor],
     messageGotBannedForLink: Option[MessageGotBannedForLink],
-    createdAt: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Kyiv")),
+    createdAt: ZonedDateTime = now(),
     updatedAt: Option[ZonedDateTime] = None
 )
 
 object BannedUser {
   final case class InnerId(value: Long) extends AnyVal
-  final case class TelegramUserId(id: ChatId) extends AnyVal
+  final case class IsCurrentlyBanned(value: Boolean) extends AnyVal
+  final case class IsChannel(value: Boolean) extends AnyVal
+  final case class TelegramUserId(id: Long) extends AnyVal
   final case class TelegramName(name: String) extends AnyVal
   final case class TelegramUsername(username: String) extends AnyVal
   final case class BanReason(text: String) extends AnyVal
   final case class BannedBy(name: String) extends AnyVal
-  final case class BannedByTelegramUserId(id: ChatId) extends AnyVal
+  final case class BannedByTelegramUserId(id: Long) extends AnyVal
   final case class MessageGotBannedFor(text: String) extends AnyVal
-  final case class MessageGotBannedForLink(link: String)
-      extends AnyVal // TODO: better type than String?
+  final case class MessageGotBannedForLink(link: String) extends AnyVal
 
   // TODO: sample data, to be removed
-  import telegramium.bots.ChatIntId
   lazy val bannedUsers = List(bannedUser1, bannedUser2)
   val bannedUser1 = BannedUser(
-    InnerId(1),
-    TelegramUserId(ChatIntId(1)),
-    Some(TelegramName("Alex")),
+    InnerId(0L),
+    IsCurrentlyBanned(true),
+    IsChannel(false),
+    TelegramUserId(1L),
+    TelegramName("Alex"),
     Some(TelegramUsername("@alex")),
-    Some(BanReason("bad")),
-    Some(BannedBy("Vasya")),
-    BannedByTelegramUserId(ChatIntId(2)),
+    BanReason("bad"),
+    BannedBy("Vasya"),
+    BannedByTelegramUserId(2L),
     Some(MessageGotBannedFor("some bad message #1")),
     None
   )
   val bannedUser2 = bannedUser1.copy(
-    InnerId(2),
-    TelegramUserId(ChatIntId(2)),
-    Some(TelegramName("Vova")),
+    InnerId(0L),
+    IsCurrentlyBanned(true),
+    IsChannel(false),
+    TelegramUserId(2L),
+    TelegramName("Vova"),
     Some(TelegramUsername("@vova")),
-    Some(BanReason("just because")),
-    Some(BannedBy("Vasya")),
-    BannedByTelegramUserId(ChatIntId(2)),
+    BanReason("just because"),
+    BannedBy("Vasya"),
+    BannedByTelegramUserId(2L),
     Some(MessageGotBannedFor("some bad message #2")),
     None
   )
