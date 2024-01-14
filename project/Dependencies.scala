@@ -39,7 +39,9 @@ object Dependencies {
   lazy val jsoniter = O.jsoniter %% "jsoniter-scala-core" % V.jsoniter
   lazy val telegramiumCore = O.telegramium %% "telegramium-core" % V.telegramium
   lazy val telegramiumHigh = O.telegramium %% "telegramium-high" % V.telegramium
-  lazy val distageCore = O.izumi %% "distage-core" % V.distageCore
+  lazy val distageCore = O.izumi %% "distage-core" % V.izumi
+  lazy val logstage = O.izumi %% "logstage-core" % V.izumi
+  lazy val logstageSlf4j = O.izumi %% "logstage-adapter-slf4j" % V.izumi
   lazy val quillJdbc = O.quill %% "quill-jdbc" % V.quill
   lazy val quillDoobie = O.quill %% "quill-doobie" % V.quill
   lazy val sqliteJdbc = O.xerial % "sqlite-jdbc" % V.sqliteJdbc
