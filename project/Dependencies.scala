@@ -6,14 +6,14 @@ object Dependencies {
     val cats = "2.10.0"
     val catsEffect = "3.5.2"
     val fs2 = "3.9.3"
-    val http4s = "0.23.24"
-    val jsoniter = "2.26.2"
-    val telegramium = "8.69.0"
-    val distageCore = "1.2.3"
+    val http4s = "0.23.25"
+    val jsoniter = "2.27.2"
+    val telegramium = "8.70.0"
+    val izumi = "1.2.3"
     val quill = "4.8.0"
-    val sqliteJdbc = "3.28.0"
+    val sqliteJdbc = "3.44.1.0"
     val doobie = "1.0.0-RC2" // TODO: update on stable release
-    val fly4s = "0.0.19"
+    val fly4s = "1.0.0"
   }
 
   object O { // organizations
