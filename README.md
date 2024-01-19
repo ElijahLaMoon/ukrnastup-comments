@@ -86,7 +86,8 @@ In order to do that you need to:
 2. install the [flyctl](https://fly.io/docs/hands-on/install-flyctl)
 3. create [volume](https://fly.io/docs/apps/volume-storage) (in case of the `fly.toml` config in root of this project the volume has to be named as specified in `source` of `[mounts]` section)
 4. set [secrets](https://fly.io/docs/reference/secrets) like those you have in your `./run` script (I would recommend setting them with `--stage` option appended)
-4. and once you run `flyctl deploy` (or `flyctl deploy --local-only` to build Docker image locally) you have to have to run as well `flyctl scale count 1`
+5. make sure you are about to deploy the last version of your code, i.e. just run `sbt stage` at this step
+6. and once you run `flyctl deploy` (or `flyctl deploy --local-only` to build Docker image locally) you have to have to run as well `flyctl scale count 1`
 
 The last command is required because Telegram allows only 1 bot instance running, and Fly.io creates 2 machines when you deploy an application for the first time.
 Also, now when you'd like to test some new changes you make locally to this codebase, you have to create a separate bot and replace its token in the running script
