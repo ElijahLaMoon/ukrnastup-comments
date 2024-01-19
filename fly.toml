@@ -1,0 +1,33 @@
+# fly.toml app configuration file generated for ukrnastup-comments on 2024-01-14T02:05:17+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "ukrnastup-comments"
+primary_region = "waw"
+
+[build]
+dockerfile = "./Dockerfile"
+
+[mounts]
+source = "comments_db"
+destination = "/opt/app/data"
+
+[http_service]
+internal_port = 8080
+force_https = false
+auto_stop_machines = false
+processes = ["app"]
+
+[[http_service.http_checks]]
+interval = "1m"
+grace_period = "30s"
+method = "get"
+path = "/"
+protocol = "http"
+timeout = "2s"
+
+[[vm]]
+cpu_kind = "shared"
+cpus = 1
+memory_mb = 1024
