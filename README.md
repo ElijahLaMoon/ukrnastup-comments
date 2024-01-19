@@ -95,3 +95,17 @@ Last thing to mention, is that `fly.toml` config creates a virtual machine with 
 As of Jan. 19, 2024 you may use their VMs with only 256MB of RAM completely for free, see more on that [here](https://fly.io/docs/about/pricing/#free-allowances).
 Thus, you are going to have to pay roughly $0.08 per day for this bot's VM with 3GB volume (free).
 If you don't want to - maybe have a look at [GraalVM with native images](https://www.graalvm.org/latest/reference-manual/native-image), though I encountered some difficulties with making it work and gave up on it for now.
+
+## Other
+Just so I don't forget, if I ever resort to `sbt-assembly` - add this snippet to `build.sbt`
+```scala
+lazy val assemblySettings = Seq(
+  assemblyJarName := "comments-bot.jar",
+  assemblyMergeStrategy := {
+    case "module-info.class" => MergeStrategy.discard
+    case PathList("META-INF", xs @ _*) if xs.last == "module-info.class" =>
+      MergeStrategy.discard
+    case x => (assembly / assemblyMergeStrategy).value.apply(x)
+  }
+)
+```
