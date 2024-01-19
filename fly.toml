@@ -14,7 +14,7 @@ source = "comments_db"
 destination = "/opt/app/data"
 
 [http_service]
-internal_port = 8080
+internal_port = 9000
 force_https = false
 auto_stop_machines = false
 processes = ["app"]
