@@ -277,18 +277,19 @@ object CommentsBot {
           if (command.nonEmpty) {
             for {
               adminsIds <- Db.getAdmins.map(_.map(_.telegramId.id))
-              commandResult <-
+              _ <-
                 if (
                   msg.from.fold(false)(u => adminsIds.contains(u.id)) ||
                   msg.senderChat.fold(false)(_.id == commentsChatId)
                 )
-                  handleCommand(command.get, msg)
-                else "ти не адмін".pure[IO]
-              _ <- sendMessage(
-                ChatIntId(commentsChatId),
-                commandResult,
-                replyParameters = Some(ReplyParameters(msg.messageId))
-              ).exec
+                  handleCommand(command.get, msg).flatMap { commandResult =>
+                    sendMessage(
+                      ChatIntId(commentsChatId),
+                      commandResult,
+                      replyParameters = Some(ReplyParameters(msg.messageId))
+                    ).exec
+                  }
+                else IO.unit
             } yield ()
           } else IO.unit
         } else IO.unit
