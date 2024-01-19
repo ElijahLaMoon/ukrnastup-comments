@@ -5,10 +5,6 @@ ThisBuild / version := "0.1.0"
 ThisBuild / organization := "org.ukrnastup"
 ThisBuild / organizationName := "UkrNastup"
 
-ThisBuild / libraryDependencies += compilerPlugin(
-  "com.olegpy" %% "better-monadic-for" % "0.3.1"
-)
-
 Global / onLoad := {
   (Global / onLoad).value andThen ("dependencyUpdates" :: _)
 }
@@ -17,6 +13,7 @@ lazy val baseSettings = Seq(
   scalaVersion := "2.13.12",
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
   tpolecatScalacOptions ++= Set(
     ScalacOptions.deprecation,
     ScalacOptions.lintAdaptedArgs,
