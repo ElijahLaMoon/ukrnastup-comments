@@ -4,15 +4,15 @@ object Dependencies {
 
   object V { // versions
     val cats = "2.10.0"
-    val catsEffect = "3.5.2"
+    val catsEffect = "3.5.3"
     val fs2 = "3.9.3"
     val http4s = "0.23.25"
     val jsoniter = "2.27.2"
     val telegramium = "8.70.0"
-    val izumi = "1.2.3"
-    val quill = "4.8.0"
-    val sqliteJdbc = "3.44.1.0"
-    val doobie = "1.0.0-RC2" // TODO: update on stable release
+    val izumi = "1.2.4"
+    val quill = "4.8.1"
+    val sqliteJdbc = "3.45.0.0"
+    val doobie = "1.0.0-RC4" // TODO: update on stable release
     val fly4s = "1.0.0"
   }
 
