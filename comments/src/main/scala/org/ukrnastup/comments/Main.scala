@@ -38,11 +38,10 @@ object Main extends IOApp {
           Command.visible.map(c => BotCommand(c.command, c.description))
 
         for {
-          _ <- Server.make
           _ <- bot.setMyCommands(commands).exec
           _ <- bot.start().start
           _ <- logger.info("Bot started")
-          ec <- IO.never[ExitCode]
+          ec <- Server.make.useForever.as(ExitCode.Success)
         } yield ec
       }
   }

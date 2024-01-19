@@ -11,8 +11,8 @@ import org.http4s.server.Router
 object Server {
   def make(implicit logger: LogIO[IO]) = {
 
-    val routes = HttpRoutes.of[IO] { case GET -> Root => // healthcheck
-      logger.info("server: / called") *> Ok()
+    val routes = HttpRoutes.of[IO] { case GET -> Root =>
+      logger.info("server: / called") *> Ok("Healtheck passed")
     }
 
     val httpApp = Router("/" -> routes).orNotFound
@@ -20,10 +20,8 @@ object Server {
     EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
-      .withPort(port"8080")
+      .withPort(port"9000")
       .withHttpApp(httpApp)
       .build
-      .allocated
-      .flatMap(_._2)
   }
 }
