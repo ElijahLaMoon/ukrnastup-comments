@@ -1,7 +1,7 @@
 # Comments bot
 
 ## Notice
-This project's target audience is Ukrainians. If you are one then you may be interested in [README in Ukrainian](https://github.com/ElijahLaMoon/ukrnastup-comments/README-ukr.md)
+This project's target audience is Ukrainians. If you are one then you may be interested in [README in Ukrainian](https://github.com/ElijahLaMoon/ukrnastup-comments/blob/master/README-ukr.md)
 
 ## Overview
 As of Jan. 18, 2024 Telegram doesn't offer any native means to specify a reason why some group's admin banned a user.
