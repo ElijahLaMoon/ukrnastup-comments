@@ -90,3 +90,8 @@ In order to do that you need to:
 
 The last command is required because Telegram allows only 1 bot instance running, and Fly.io creates 2 machines when you deploy an application for the first time.
 Also, now when you'd like to test some new changes you make locally to this codebase, you have to create a separate bot and replace its token in the running script
+
+Last thing to mention, is that `fly.toml` config creates a virtual machine with 1GB of RAM, which exceeds provided "free tier".
+As of Jan. 19, 2024 you may use their VMs with only 256MB of RAM completely for free, see more on that [here](https://fly.io/docs/about/pricing/#free-allowances).
+Thus, you are going to have to pay roughly $0.08 per day for this bot's VM with 3GB volume (free).
+If you don't want to - maybe have a look at [GraalVM with native images](https://www.graalvm.org/latest/reference-manual/native-image), though I encountered some difficulties with making it work and gave up on it for now.
