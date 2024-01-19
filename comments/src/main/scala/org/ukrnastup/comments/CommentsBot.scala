@@ -34,8 +34,9 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
   override def start(): IO[Unit] =
     api
       .execute(this.deleteWebhook(true.some))
-      .start *>
-      handleUpdateAdminsCommand.void
+      .start
+      .void <*
+      handleUpdateAdminsCommand
 
   def handleCommand(
       command: Command,
