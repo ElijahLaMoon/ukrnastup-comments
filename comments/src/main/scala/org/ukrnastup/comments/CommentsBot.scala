@@ -31,12 +31,16 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
   /** Launches bot in background with dropping pending Telegram updates,
     * refreshes admins cache
     */
-  override def start(): IO[Unit] =
-    api
-      .execute(this.deleteWebhook(true.some))
-      .start
-      .void <*
-      handleUpdateAdminsCommand
+  override def start(): IO[Unit] = for {
+    _ <- handleUpdateAdminsCommand
+    _ <- api.execute(this.deleteWebhook(true.some))
+    refCounter <- Ref[IO].of(0)
+    offsetKeeper = new LongPollBot.OffsetKeeper[IO] {
+      def getOffset = refCounter.get
+      def setOffset(offset: Int) = refCounter.set(offset)
+    }
+    _ <- this.poll(offsetKeeper)
+  } yield ()
 
   def handleCommand(
       command: Command,
