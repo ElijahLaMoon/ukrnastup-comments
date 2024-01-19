@@ -12,7 +12,7 @@ object Server {
   def make(implicit logger: LogIO[IO]) = {
 
     val routes = HttpRoutes.of[IO] { case GET -> Root =>
-      logger.info("server: / called") *> Ok("Healtheck passed")
+      logger.info("server: / called") *> Ok("Healthcheck passed")
     }
 
     val httpApp = Router("/" -> routes).orNotFound
