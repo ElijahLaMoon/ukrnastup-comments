@@ -39,7 +39,7 @@ object Main extends IOApp {
 
         for {
           _ <- bot.setMyCommands(commands).exec
-          _ <- bot.start().start
+          _ <- bot.start()
           _ <- logger.info("Bot started")
           ec <- Server.make.useForever.as(ExitCode.Success)
         } yield ec
