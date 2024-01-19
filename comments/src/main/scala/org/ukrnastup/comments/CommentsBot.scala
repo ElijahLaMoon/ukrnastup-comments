@@ -28,6 +28,15 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
     logger: LogIO[IO]
 ) extends LongPollBot[IO](api) {
 
+  /** Launches bot in background with dropping pending Telegram updates,
+    * refreshes admins cache
+    */
+  override def start(): IO[Unit] =
+    api
+      .execute(this.deleteWebhook(true.some))
+      .start *>
+      handleUpdateAdminsCommand.void
+
   def handleCommand(
       command: Command,
       message: Message
