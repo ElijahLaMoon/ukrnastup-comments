@@ -5,15 +5,15 @@ object Dependencies {
   object V { // versions
     val cats = "2.10.0"
     val catsEffect = "3.5.3"
-    val fs2 = "3.9.3"
+    val fs2 = "3.9.4"
     val http4s = "0.23.25"
     val jsoniter = "2.27.2"
-    val telegramium = "8.70.0"
-    val izumi = "1.2.4"
+    val telegramium = "8.71.0"
+    val izumi = "1.2.5"
     val quill = "4.8.1"
-    val sqliteJdbc = "3.45.0.0"
+    val sqliteJdbc = "3.45.1.0"
     val doobie = "1.0.0-RC4" // TODO: update on stable release
-    val fly4s = "1.0.0"
+    val fly4s = "1.0.1"
   }
 
   object O { // organizations
@@ -47,7 +47,7 @@ object Dependencies {
   lazy val sqliteJdbc = O.xerial % "sqlite-jdbc" % V.sqliteJdbc
   lazy val doobieCore = O.tpolecat %% "doobie-core" % V.doobie
   lazy val doobieHikari = O.tpolecat %% "doobie-hikari" % V.doobie
-  lazy val fly4s = O.geirolz %% "fly4s-core" % V.fly4s
+  lazy val fly4s = O.geirolz %% "fly4s" % V.fly4s
 
   lazy val munit = "org.scalameta" %% "munit" % "0.7.29"
 }
