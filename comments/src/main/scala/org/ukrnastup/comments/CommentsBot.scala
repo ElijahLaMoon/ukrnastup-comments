@@ -1,5 +1,6 @@
 package org.ukrnastup.comments
 
+import buildinfo.BuildInfo
 import cats.effect.IO
 import cats.effect.Ref
 import cats.syntax.applicative._
@@ -34,6 +35,10 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
     */
   override def start(): IO[Unit] = (for {
     _ <- handleUpdateAdminsCommand
+    _ <- sendMessage(
+      ChatIntId(commentsLogsChannelId),
+      s"Бот версії ${BuildInfo.version} онлайн"
+    ).exec
     _ <- api.execute(this.deleteWebhook(true.some))
     refCounter <- Ref[IO].of(0)
     offsetKeeper = new LongPollBot.OffsetKeeper[IO] {

@@ -47,6 +47,10 @@ lazy val dockerSettings = Seq(
   )
 )
 
+lazy val buildInfoSettings = Seq(
+  buildInfoKeys := Seq[BuildInfoKey](version)
+)
+
 lazy val root = project
   .in(file("."))
   .settings(baseSettings)
@@ -58,11 +62,11 @@ lazy val root = project
 
 lazy val comments = project
   .in(file("comments"))
-  .settings(baseSettings, dockerSettings)
+  .settings(baseSettings, dockerSettings, buildInfoSettings)
   .settings(
     name := "comments"
   )
-  .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin)
+  .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin, BuildInfoPlugin)
   .settings(
     libraryDependencies ++= Seq(
       cats,
