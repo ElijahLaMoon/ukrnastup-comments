@@ -1,7 +1,7 @@
 import Dependencies._
 import org.typelevel.scalacoptions.ScalacOptions
 
-ThisBuild / version := "0.3.2"
+ThisBuild / version := "0.4.0"
 ThisBuild / organization := "org.ukrnastup"
 ThisBuild / organizationName := "UkrNastup"
 
