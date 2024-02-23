@@ -19,6 +19,7 @@ import telegramium.bots.high.LongPollBot
 import telegramium.bots.high.implicits.methodOps
 
 import java.time.format.{DateTimeFormatter => DTF}
+import scala.concurrent.duration.DurationInt
 
 import Extensions._
 
@@ -63,9 +64,13 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
       reason: String,
       adminMessage: Message
   ): IO[String] = {
+    val replyCommandWasAppliedTo = adminMessage.replyToMessage
 
-    if (adminMessage.replyToMessage.isEmpty)
+    if (replyCommandWasAppliedTo.isEmpty)
       "використовуйте цю команду у відповідь на реплай людини, яку ви хочете забанити"
+        .pure[IO]
+    else if (replyCommandWasAppliedTo.get.chat.id == commentsChatId)
+      "ви намагаєтесь заблокувати канал, до якого прив'язаний цей чат з коментарями. швидше за все ви використали команду /ban у коментарях під постом, але забули додати реплай на повідомлення користувача, якого ви хочете заблокувати"
         .pure[IO]
     else
       for {
@@ -277,26 +282,47 @@ object CommentsBot {
     new CommentsBot(commentsChatId, commentsLogsChannelId) {
       override def onMessage(msg: Message): IO[Unit] =
         // TODO: maybe add ability to ban by sending "/ban @username" in log channel?
-        if (msg.chat.id == commentsChatId && msg.text.nonEmpty) {
+        ifOrUnit(msg.chat.id == commentsChatId && msg.text.nonEmpty) {
           val command = Command.parse(msg.text.get)
-          if (command.nonEmpty) {
+
+          ifOrUnit(command.nonEmpty) {
             for {
               adminsIds <- Db.getAdmins.map(_.map(_.telegramId.id))
+
               _ <-
-                if (
+                ifOrUnit(
                   msg.from.fold(false)(u => adminsIds.contains(u.id)) ||
-                  msg.senderChat.fold(false)(_.id == commentsChatId)
-                )
-                  handleCommand(command.get, msg).flatMap { commandResult =>
-                    sendMessage(
+                    msg.senderChat.fold(false)(_.id == commentsChatId)
+                ) {
+                  for {
+                    commandResult <- handleCommand(command.get, msg)
+                    botsReplyMessage <- sendMessage(
                       ChatIntId(commentsChatId),
                       commandResult,
                       replyParameters = Some(ReplyParameters(msg.messageId))
                     ).exec
-                  }
-                else IO.unit
+                    messagesToDelete = List(
+                      msg.messageId,
+                      botsReplyMessage.messageId
+                    )
+                    _ <- IO.sleep(2.seconds)
+                    deleteResult <- deleteMessages(
+                      ChatIntId(commentsChatId),
+                      messagesToDelete
+                    ).exec
+                    _ <- logger.info(
+                      s"Attempted to delete ${messagesToDelete -> "messages"} $deleteResult"
+                    )
+                  } yield ()
+                }
+
             } yield ()
-          } else IO.unit
-        } else IO.unit
+          }
+        }
     }
+
+  // little helper to avoid too many `IO.unit`s
+  private def ifOrUnit[A](predicate: Boolean)(thunk: => IO[A]) =
+    if (predicate) thunk.void
+    else IO.unit
 }
