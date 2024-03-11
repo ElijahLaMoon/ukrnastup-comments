@@ -37,9 +37,10 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
     _ <- handleUpdateAdminsCommand
     _ <- sendMessage(
       ChatIntId(commentsLogsChannelId),
-      s"Бот версії ${BuildInfo.version} онлайн"
+      s"Бот версії ${BuildInfo.version} онлайн",
+      disableNotification = true.some
     ).exec
-    _ <- api.execute(this.deleteWebhook(true.some))
+    _ <- api.execute(this.deleteWebhook(dropPendingUpdates = true.some))
     refCounter <- Ref[IO].of(0)
     offsetKeeper = new LongPollBot.OffsetKeeper[IO] {
       def getOffset = refCounter.get
@@ -80,7 +81,7 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
     else
       for {
         isSentFromChat <- Ref[IO].of(false)
-        messageToBanFor = adminMessage.replyToMessage.get
+        messageToBanFor = replyCommandWasAppliedTo.get
         _ <- IO(messageToBanFor.senderChat.nonEmpty).ifM(
           isSentFromChat.set(true),
           /* otherwise leave untouched */ IO.unit
