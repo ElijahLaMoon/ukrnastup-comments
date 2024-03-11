@@ -74,13 +74,20 @@ class CommentsBot private (
       adminMessage: Message
   ): IO[String] = {
     val replyCommandWasAppliedTo = adminMessage.replyToMessage
+    val isBanAppliedWithoutAReply =
+      replyCommandWasAppliedTo
+        .map(_.senderChat.exists(_.id == originalChannelId))
+        .getOrElse(false)
 
     if (replyCommandWasAppliedTo.isEmpty)
       "використовуйте цю команду у відповідь на реплай людини, яку ви хочете забанити"
         .pure[IO]
-    else if (replyCommandWasAppliedTo.get.chat.id == commentsChatId)
-      "ви намагаєтесь заблокувати канал, до якого прив'язаний цей чат з коментарями. швидше за все ви використали команду /ban у коментарях під постом, але забули додати реплай на повідомлення користувача, якого ви хочете заблокувати"
-        .pure[IO]
+    else if (isBanAppliedWithoutAReply)
+      logger.info(
+        s"Admin is replying to ${replyCommandWasAppliedTo -> "this message"}"
+      ) *>
+        "ви намагаєтесь заблокувати канал, до якого прив'язаний цей чат з коментарями. швидше за все ви використали команду /ban у коментарях під постом, але забули додати реплай на повідомлення користувача, якого ви хочете заблокувати"
+          .pure[IO]
     else
       for {
         isSentFromChat <- Ref[IO].of(false)
