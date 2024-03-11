@@ -24,8 +24,11 @@ import scala.concurrent.duration.DurationInt
 
 import Extensions._
 
-class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
-    implicit
+class CommentsBot private (
+    commentsChatId: Long,
+    commentsLogsChannelId: Long,
+    originalChannelId: Long
+)(implicit
     api: Api[IO],
     logger: LogIO[IO]
 ) extends LongPollBot[IO](api) {
@@ -281,11 +284,15 @@ class CommentsBot private (commentsChatId: Long, commentsLogsChannelId: Long)(
 }
 
 object CommentsBot {
-  def make(commentsChatId: Long, commentsLogsChannelId: Long)(implicit
+  def make(
+      commentsChatId: Long,
+      commentsLogsChannelId: Long,
+      originalChannelId: Long
+  )(implicit
       api: Api[IO],
       logger: LogIO[IO]
   ) =
-    new CommentsBot(commentsChatId, commentsLogsChannelId) {
+    new CommentsBot(commentsChatId, commentsLogsChannelId, originalChannelId) {
       override def onMessage(msg: Message): IO[Unit] =
         // TODO: maybe add ability to ban by sending "/ban @username" in log channel?
         ifOrUnit(msg.chat.id == commentsChatId && msg.text.nonEmpty) {

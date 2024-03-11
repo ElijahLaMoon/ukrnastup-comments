@@ -1,5 +1,6 @@
 package org.ukrnastup.comments
 
+import buildinfo.BuildInfo
 import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
@@ -24,6 +25,9 @@ object Main extends IOApp {
     val token = cfg.getString("bot.token")
     val commentsChatId = cfg.getLong("bot.commentsChatId")
     val commentsLogsChannelId = cfg.getLong("bot.commentsLogsChannelId")
+    val originalChannelId = cfg.getLong("bot.sourceChannelId")
+    // TODO: mention this requirement in docs
+    // channel to which the comments are binded
 
     EmberClientBuilder
       .default[IO]
@@ -33,7 +37,11 @@ object Main extends IOApp {
         implicit val api: Api[IO] =
           BotApi(httpClient, baseUrl = s"https://api.telegram.org/bot$token")
         val bot =
-          CommentsBot.make(commentsChatId, commentsLogsChannelId)
+          CommentsBot.make(
+            commentsChatId,
+            commentsLogsChannelId,
+            originalChannelId
+          )
         val commands =
           Command.visible.map(c => BotCommand(c.command, c.description))
 
