@@ -40,7 +40,9 @@ object Main extends IOApp {
         for {
           _ <- bot.setMyCommands(commands).exec
           _ <- bot.start()
-          _ <- logger.info("Bot started")
+          _ <- logger.info(
+            s"Bot started, current version: ${BuildInfo.version}"
+          )
           ec <- Server.make.useForever.as(ExitCode.Success)
         } yield ec
       }
