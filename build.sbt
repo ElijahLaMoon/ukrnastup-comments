@@ -10,7 +10,7 @@ Global / onLoad := {
 }
 
 lazy val baseSettings = Seq(
-  scalaVersion := "2.13.12",
+  scalaVersion := "2.13.14",
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
