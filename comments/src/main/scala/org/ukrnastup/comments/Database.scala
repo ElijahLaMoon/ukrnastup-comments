@@ -4,23 +4,32 @@ import cats.effect.IO
 import cats.effect.kernel.Resource
 import com.typesafe.config.ConfigFactory
 import doobie.Transactor
+import doobie.free.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits.toConnectionIOOps
 import doobie.util.ExecutionContexts
 import fly4s.Fly4s
 import fly4s.data.Fly4sConfig
 import fly4s.data.Location
+import io.getquill.*
+import io.getquill.doobie.DoobieContext
 
-import scala.annotation.nowarn
-
-object Database {
+object Database extends DoobieContext.SQLite(SnakeCase) {
   private val cfg = ConfigFactory.defaultApplication()
   private val driver = cfg.getString("ctx.driverClassName")
   private val url = cfg.getString("ctx.jdbcUrl")
 
-  private val transactor: Resource[ce.IO, Transactor[ce.IO]] = for {
-    ec <- ExecutionContexts.fixedThreadPool[ce.IO](5)
-    xa <- HikariTransactor.newHikariTransactor[ce.IO](
+  inline given insertMetaBannedUsers: InsertMeta[BannedUser] =
+    insertMeta(_.id)
+  inline given insertMetaAdmins: InsertMeta[Admin] =
+    insertMeta(_.id)
+
+  inline def bannedUsers = quote(querySchema[BannedUser]("banned_users"))
+  inline def admins = quote(querySchema[Admin]("admins_cache"))
+
+  private val transactor: Resource[IO, Transactor[IO]] = for {
+    ec <- ExecutionContexts.fixedThreadPool[IO](5)
+    xa <- HikariTransactor.newHikariTransactor[IO](
       driverClassName = driver,
       url = url,
       user = "",
@@ -30,7 +39,7 @@ object Database {
   } yield xa
 
   val migrateDb = Fly4s
-    .make[ce.IO](
+    .make[IO](
       url = url,
       user = None,
       password = None,
@@ -40,19 +49,19 @@ object Database {
     )
     .evalMap(_.migrate)
 
-  def processAction[A](action: doobie.ConnectionIO[A]): ce.IO[A] =
+  def processAction[A](action: ConnectionIO[A]): IO[A] =
     transactor.use { xa =>
       action.transact(xa)
     }
 
-  import schema._
-  import schema.ctx._
   // ------------- USERS TABLE METHODS -------------
-  def getBannedUsers(pred: BannedUser => Boolean = _ => true) =
+  def getBannedUsers(
+      pred: BannedUser => Boolean = _ => true
+  ): IO[List[BannedUser]] =
     processAction(
       stream(bannedUsers).filter(pred).compile.toList
     )
-  def insertOrUpdateBannedUser(user: BannedUser) =
+  def insertOrUpdateBannedUser(user: BannedUser): IO[Long] =
     processAction(
       run(
         bannedUsers
@@ -70,29 +79,34 @@ object Database {
           )
       )
     )
-  def getBannedUserByTelegramId(telegramId: BannedUser.TelegramUserId) =
+  def getBannedUserByTelegramId(
+      telegramId: BannedUser.TelegramUserId
+  ): IO[List[BannedUser]] =
     processAction(
       run(
         bannedUsers.filter(_.telegramId == lift(telegramId))
       )
     )
-  def getBannedUserByUsername(username: BannedUser.TelegramUsername) =
+  def getBannedUserByUsername(
+      username: BannedUser.TelegramUsername
+      // ): IO[List[BannedUser.TelegramUsername]] =
+  ): IO[List[BannedUser]] =
     processAction(
       run(
         bannedUsers
-          .filter(u =>
-            u.telegramUsername.isDefined && // guarantees that username is not null
-              u.telegramUsername.getOrNull == lift(username)
-          )
+          .filter { u =>
+            u.telegramUsername.isDefined &&
+            u.telegramUsername.exists(_ == lift(username))
+          }
       )
     )
-  def deleteBannedUser(telegramId: BannedUser.TelegramUserId) =
+  def deleteBannedUser(telegramId: BannedUser.TelegramUserId): IO[Long] =
     processAction(
       run(
         bannedUsers.filter(_.telegramId == lift(telegramId)).delete
       )
     )
-  def updateBannedUser(user: BannedUser) =
+  def updateBannedUser(user: BannedUser): IO[Long] =
     processAction(
       run(
         bannedUsers
@@ -101,35 +115,35 @@ object Database {
       )
     )
   // ------------- ADMINS TABLE METHODS -------------
-  val getAdmins =
+  val getAdmins: IO[List[Admin]] =
     processAction(
       stream(admins).compile.toList
     )
-  def insertAdmin(admin: Admin) =
+  def insertAdmin(admin: Admin): IO[Long] =
     processAction(
       run(
         admins.insertValue(lift(admin))
       )
     )
-  def insertAdmins(adminsList: List[Admin]) =
+  def insertAdmins(adminsList: List[Admin]): IO[List[Long]] =
     processAction(
       run(
         liftQuery(adminsList).foreach(admins.insertValue(_))
       )
     )
-  def getAdminByTelegramId(telegramId: Admin.TelegramUserId) =
+  def getAdminByTelegramId(telegramId: Admin.TelegramUserId): IO[List[Admin]] =
     processAction(
       run(
         admins.filter(_.telegramId == lift(telegramId))
       )
     )
-  def deleteAdmin(telegramId: Admin.TelegramUserId) =
+  def deleteAdmin(telegramId: Admin.TelegramUserId): IO[Long] =
     processAction(
       run(
         admins.filter(_.telegramId == lift(telegramId)).delete
       )
     )
-  def deleteAdmins(adminsList: List[Admin]) =
+  def deleteAdmins(adminsList: List[Admin]): IO[List[Long]] =
     processAction(
       run(
         liftQuery(adminsList).foreach(adminToDelete =>
@@ -137,7 +151,7 @@ object Database {
         )
       )
     )
-  def updateAdmin(admin: Admin) =
+  def updateAdmin(admin: Admin): IO[Long] =
     processAction(
       run(
         admins
@@ -145,20 +159,4 @@ object Database {
           .updateValue(lift(admin))
       )
     )
-}
-
-object schema {
-  import io.getquill.SnakeCase
-  import io.getquill.doobie.DoobieContext
-
-  val ctx = new DoobieContext.SQLite(SnakeCase)
-  import ctx._
-
-  @nowarn implicit val insertMetaBannedUsers =
-    insertMeta[BannedUser](_.id)
-  @nowarn implicit val insertMetaAdmins =
-    insertMeta[Admin](_.id)
-
-  val bannedUsers = quote(querySchema[BannedUser]("banned_users"))
-  val admins = quote(querySchema[Admin]("admins_cache"))
 }
