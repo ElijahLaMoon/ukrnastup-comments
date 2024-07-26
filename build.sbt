@@ -1,4 +1,4 @@
-import Dependencies._
+import Dependencies.*
 import org.typelevel.scalacoptions.ScalacOptions
 
 ThisBuild / version := "0.4.1"

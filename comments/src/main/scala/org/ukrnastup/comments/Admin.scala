@@ -2,7 +2,7 @@ package org.ukrnastup.comments
 
 import java.time.ZonedDateTime
 
-import Admin._
+import Admin.*
 
 final case class Admin(
     id: InnerId,

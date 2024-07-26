@@ -2,7 +2,7 @@ package org.ukrnastup.comments
 
 import java.time.ZonedDateTime
 
-import BannedUser._
+import BannedUser.*
 
 final case class BannedUser(
     id: InnerId,

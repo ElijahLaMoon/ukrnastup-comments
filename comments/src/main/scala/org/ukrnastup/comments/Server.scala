@@ -1,10 +1,10 @@
 package org.ukrnastup.comments
 
 import cats.effect.IO
-import com.comcast.ip4s._
+import com.comcast.ip4s.*
 import logstage.LogIO
 import org.http4s.HttpRoutes
-import org.http4s.dsl.io._
+import org.http4s.dsl.io.*
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 

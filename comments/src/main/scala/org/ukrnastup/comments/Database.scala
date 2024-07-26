@@ -1,7 +1,7 @@
 package org.ukrnastup.comments
 
+import cats.effect.IO
 import cats.effect.kernel.Resource
-import cats.{effect => ce}
 import com.typesafe.config.ConfigFactory
 import doobie.Transactor
 import doobie.hikari.HikariTransactor

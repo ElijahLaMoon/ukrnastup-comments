@@ -10,7 +10,7 @@ import izumi.logstage.api.routing.StaticLogRouter
 import logstage.LogIO
 import org.http4s.ember.client.EmberClientBuilder
 import telegramium.bots.BotCommand
-import telegramium.bots.high._
+import telegramium.bots.high.*
 import telegramium.bots.high.implicits.methodOps
 
 object Main extends IOApp {

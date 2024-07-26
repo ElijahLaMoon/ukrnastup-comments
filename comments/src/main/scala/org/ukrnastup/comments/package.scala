@@ -1,6 +1,6 @@
 package org.ukrnastup
 
-import cats.syntax.option._
+import cats.syntax.option.*
 import telegramium.bots.Chat
 import telegramium.bots.User
 

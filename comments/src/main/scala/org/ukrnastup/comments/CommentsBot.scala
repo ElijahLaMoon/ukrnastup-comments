@@ -3,11 +3,12 @@ package org.ukrnastup.comments
 import buildinfo.BuildInfo
 import cats.effect.IO
 import cats.effect.Ref
-import cats.syntax.applicative._
-import cats.syntax.option._
+import cats.syntax.applicative.*
+import cats.syntax.option.*
+import iozhik.OpenEnum.Known
 import logstage.LogIO
-import org.ukrnastup.comments.{Command => Cmd}
-import org.ukrnastup.comments.{Database => Db}
+import org.ukrnastup.comments.Command as Cmd
+import org.ukrnastup.comments.Database as Db
 import telegramium.bots.ChatIntId
 import telegramium.bots.ChatMemberAdministrator
 import telegramium.bots.ChatMemberOwner
@@ -19,10 +20,10 @@ import telegramium.bots.high.Api
 import telegramium.bots.high.LongPollBot
 import telegramium.bots.high.implicits.methodOps
 
-import java.time.format.{DateTimeFormatter => DTF}
+import java.time.format.DateTimeFormatter as DTF
 import scala.concurrent.duration.DurationInt
 
-import Extensions._
+import Extensions.*
 
 class CommentsBot private (
     commentsChatId: Long,

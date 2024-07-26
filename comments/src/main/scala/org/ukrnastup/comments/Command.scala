@@ -1,6 +1,6 @@
 package org.ukrnastup.comments
 
-import cats.syntax.option._
+import cats.syntax.option.*
 
 sealed abstract class Command(val command: String, val description: String)
 
