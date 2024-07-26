@@ -18,7 +18,7 @@ object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = {
 
     val _logger = IzLogger(threshold = logstage.Log.Level.Info)
-    implicit val logger = LogIO.fromLogger[IO](_logger)
+    given logger: LogIO[IO] = LogIO.fromLogger[IO](_logger)
     StaticLogRouter.instance.setup(_logger.router) // bind slf4j to logstage
 
     val cfg = ConfigFactory.defaultApplication().resolve()
@@ -34,7 +34,7 @@ object Main extends IOApp {
       .build
       .both(Database.migrateDb)
       .use { case (httpClient, _) =>
-        implicit val api: Api[IO] =
+        given api: Api[IO] =
           BotApi(httpClient, baseUrl = s"https://api.telegram.org/bot$token")
         val bot =
           CommentsBot.make(

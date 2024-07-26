@@ -29,7 +29,7 @@ class CommentsBot private (
     commentsChatId: Long,
     commentsLogsChannelId: Long,
     originalChannelId: Long
-)(implicit
+)(using
     api: Api[IO],
     logger: LogIO[IO]
 ) extends LongPollBot[IO](api) {
@@ -134,10 +134,10 @@ class CommentsBot private (
         // Metals fails to infer type for whatever reason
         userReadyToBan: BannedUser <- isSentFromChat.get
           .ifM(
-            ifTrue = (messageToBanFor.senderChat.get.toBannedChat _)
+            ifTrue = messageToBanFor.senderChat.get.toBannedChat
               .tupled(genericParametersOfBan)
               .pure[IO],
-            ifFalse = (messageToBanFor.from.get.toBannedUser _)
+            ifFalse = messageToBanFor.from.get.toBannedUser
               .tupled(genericParametersOfBan)
               .pure[IO]
           )
@@ -296,7 +296,7 @@ object CommentsBot {
       commentsChatId: Long,
       commentsLogsChannelId: Long,
       originalChannelId: Long
-  )(implicit
+  )(using
       api: Api[IO],
       logger: LogIO[IO]
   ) =

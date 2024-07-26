@@ -9,7 +9,7 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 
 object Server {
-  def make(implicit logger: LogIO[IO]) = {
+  def make(using logger: LogIO[IO]) = {
 
     val routes = HttpRoutes.of[IO] { case GET -> Root =>
       logger.info("server: / called") *> Ok("Healthcheck passed")
