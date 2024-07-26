@@ -15,9 +15,9 @@ import io.getquill.*
 import io.getquill.doobie.DoobieContext
 
 object Database extends DoobieContext.SQLite(SnakeCase) {
-  private val cfg = ConfigFactory.defaultApplication()
+  private val cfg    = ConfigFactory.defaultApplication()
   private val driver = cfg.getString("ctx.driverClassName")
-  private val url = cfg.getString("ctx.jdbcUrl")
+  private val url    = cfg.getString("ctx.jdbcUrl")
 
   inline given insertMetaBannedUsers: InsertMeta[BannedUser] =
     insertMeta(_.id)
@@ -25,7 +25,7 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
     insertMeta(_.id)
 
   inline def bannedUsers = quote(querySchema[BannedUser]("banned_users"))
-  inline def admins = quote(querySchema[Admin]("admins_cache"))
+  inline def admins      = quote(querySchema[Admin]("admins_cache"))
 
   private val transactor: Resource[IO, Transactor[IO]] = for {
     ec <- ExecutionContexts.fixedThreadPool[IO](5)
@@ -34,7 +34,7 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
       url = url,
       user = "",
       pass = "",
-      ec
+      ec,
     )
   } yield xa
 
@@ -45,7 +45,7 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
       password = None,
       config = Fly4sConfig(
         locations = List(Location("migrations"))
-      )
+      ),
     )
     .evalMap(_.migrate)
 
@@ -75,7 +75,7 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
             (t, e) => t.bannedByTelegramId -> e.bannedByTelegramId,
             (t, e) => t.messageGotBannedFor -> e.messageGotBannedFor,
             (t, e) => t.messageGotBannedForLink -> e.messageGotBannedForLink,
-            (t, e) => t.updatedAt -> e.updatedAt
+            (t, e) => t.updatedAt -> e.updatedAt,
           )
       )
     )

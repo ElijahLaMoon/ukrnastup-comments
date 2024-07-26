@@ -25,15 +25,14 @@ object Command {
     List(Ban(""), Lookup(""), UpdateAdmins)
 
   case class Ban(reason: String) extends Command("/ban", "забанити акаунт")
-  case object BanWithoutReason extends Command("", "") // hidden command
+  case object BanWithoutReason   extends Command("", "") // hidden command
 
-  case class Lookup(username: String)
-      extends Command("/lookup", "перевірити причину бану")
+  case class Lookup(username: String) extends Command("/lookup", "перевірити причину бану")
 
   case object UpdateAdmins
       extends Command(
         "/update_admins",
-        "оновити список діючих адмінів (кеш бота)"
+        "оновити список діючих адмінів (кеш бота)",
       )
 
   // TODO: implement this later

@@ -17,20 +17,20 @@ final case class BannedUser(
     messageGotBannedFor: Option[MessageGotBannedFor],
     messageGotBannedForLink: Option[MessageGotBannedForLink],
     createdAt: ZonedDateTime = now(),
-    updatedAt: Option[ZonedDateTime] = None
+    updatedAt: Option[ZonedDateTime] = None,
 )
 
 object BannedUser {
-  final case class InnerId(value: Long) extends AnyVal
-  final case class IsCurrentlyBanned(value: Boolean) extends AnyVal
-  final case class IsChannel(value: Boolean) extends AnyVal
-  final case class TelegramUserId(id: Long) extends AnyVal
-  final case class TelegramName(name: String) extends AnyVal
-  final case class TelegramUsername(username: String) extends AnyVal
-  final case class BanReason(text: String) extends AnyVal
-  final case class BannedBy(name: String) extends AnyVal
-  final case class BannedByTelegramUserId(id: Long) extends AnyVal
-  final case class MessageGotBannedFor(text: String) extends AnyVal
+  final case class InnerId(value: Long)                  extends AnyVal
+  final case class IsCurrentlyBanned(value: Boolean)     extends AnyVal
+  final case class IsChannel(value: Boolean)             extends AnyVal
+  final case class TelegramUserId(id: Long)              extends AnyVal
+  final case class TelegramName(name: String)            extends AnyVal
+  final case class TelegramUsername(username: String)    extends AnyVal
+  final case class BanReason(text: String)               extends AnyVal
+  final case class BannedBy(name: String)                extends AnyVal
+  final case class BannedByTelegramUserId(id: Long)      extends AnyVal
+  final case class MessageGotBannedFor(text: String)     extends AnyVal
   final case class MessageGotBannedForLink(link: String) extends AnyVal
 
   // TODO: sample data, to be removed
@@ -46,7 +46,7 @@ object BannedUser {
     BannedBy("Vasya"),
     BannedByTelegramUserId(2L),
     Some(MessageGotBannedFor("some bad message #1")),
-    None
+    None,
   )
   val bannedUser2 = bannedUser1.copy(
     InnerId(0L),
@@ -59,6 +59,6 @@ object BannedUser {
     BannedBy("Vasya"),
     BannedByTelegramUserId(2L),
     Some(MessageGotBannedFor("some bad message #2")),
-    None
+    None,
   )
 }

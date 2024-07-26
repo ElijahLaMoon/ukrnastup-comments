@@ -9,12 +9,12 @@ final case class Admin(
     telegramId: TelegramUserId,
     telegramName: TelegramName,
     telegramUsername: Option[TelegramUsername],
-    createdAt: ZonedDateTime = now()
+    createdAt: ZonedDateTime = now(),
 )
 
 object Admin {
-  final case class InnerId(value: Long) extends AnyVal
-  final case class TelegramUserId(id: Long) extends AnyVal
-  final case class TelegramName(name: String) extends AnyVal
+  final case class InnerId(value: Long)               extends AnyVal
+  final case class TelegramUserId(id: Long)           extends AnyVal
+  final case class TelegramName(name: String)         extends AnyVal
   final case class TelegramUsername(username: String) extends AnyVal
 }

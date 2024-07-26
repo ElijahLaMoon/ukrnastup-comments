@@ -1,8 +1,8 @@
 import Dependencies.*
 import org.typelevel.scalacoptions.ScalacOptions
 
-ThisBuild / version := "0.4.1"
-ThisBuild / organization := "org.ukrnastup"
+ThisBuild / version          := "0.4.1"
+ThisBuild / organization     := "org.ukrnastup"
 ThisBuild / organizationName := "UkrNastup"
 
 Global / onLoad := {
@@ -10,7 +10,7 @@ Global / onLoad := {
 }
 
 lazy val baseSettings = Seq(
-  scalaVersion := "3.4.2",
+  scalaVersion      := "3.4.2",
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
   tpolecatScalacOptions ++= Set(
@@ -25,10 +25,10 @@ lazy val baseSettings = Seq(
     ScalacOptions.lintImplicitNotFound,
     ScalacOptions.lintInaccessible,
     ScalacOptions.warnDeadCode,
-    ScalacOptions.warnValueDiscard
+    ScalacOptions.warnValueDiscard,
   ) ++ ScalacOptions.warnUnusedOptions,
   tpolecatExcludeOptions ++= ScalacOptions.fatalWarningOptions, // i dont know why, but by default warnings are fatal
-  console / tpolecatExcludeOptions ++= ScalacOptions.defaultConsoleExclude
+  console / tpolecatExcludeOptions ++= ScalacOptions.defaultConsoleExclude,
 )
 
 lazy val dockerSettings = Seq(
@@ -41,9 +41,9 @@ lazy val dockerSettings = Seq(
     ImageName(
       namespace = Some(organization.value),
       repository = name.value,
-      tag = Some(version.value)
-    )
-  )
+      tag = Some(version.value),
+    ),
+  ),
 )
 
 lazy val buildInfoSettings = Seq(
@@ -54,8 +54,8 @@ lazy val root = project
   .in(file("."))
   .settings(baseSettings)
   .settings(
-    name := "comments-root",
-    publishArtifact := false
+    name            := "comments-root",
+    publishArtifact := false,
   )
   .aggregate(comments)
 
@@ -82,7 +82,7 @@ lazy val comments = project
       sqliteJdbc,
       doobieCore,
       doobieHikari,
-      fly4s
+      fly4s,
       // jsoniter, // these arent used for now
       // distageCore
     )

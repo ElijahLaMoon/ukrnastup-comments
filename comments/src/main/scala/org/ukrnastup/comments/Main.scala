@@ -17,15 +17,15 @@ object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
 
-    val _logger = IzLogger(threshold = logstage.Log.Level.Info)
+    val _logger             = IzLogger(threshold = logstage.Log.Level.Info)
     given logger: LogIO[IO] = LogIO.fromLogger[IO](_logger)
     StaticLogRouter.instance.setup(_logger.router) // bind slf4j to logstage
 
-    val cfg = ConfigFactory.defaultApplication().resolve()
-    val token = cfg.getString("bot.token")
-    val commentsChatId = cfg.getLong("bot.commentsChatId")
+    val cfg                   = ConfigFactory.defaultApplication().resolve()
+    val token                 = cfg.getString("bot.token")
+    val commentsChatId        = cfg.getLong("bot.commentsChatId")
     val commentsLogsChannelId = cfg.getLong("bot.commentsLogsChannelId")
-    val originalChannelId = cfg.getLong("bot.sourceChannelId")
+    val originalChannelId     = cfg.getLong("bot.sourceChannelId")
     // TODO: mention this requirement in docs
     // channel to which the comments are binded
 
@@ -40,7 +40,7 @@ object Main extends IOApp {
           CommentsBot.make(
             commentsChatId,
             commentsLogsChannelId,
-            originalChannelId
+            originalChannelId,
           )
         val commands =
           Command.visible.map(c => BotCommand(c.command, c.description))
