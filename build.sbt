@@ -5,10 +5,6 @@ ThisBuild / version          := "0.4.1"
 ThisBuild / organization     := "org.ukrnastup"
 ThisBuild / organizationName := "UkrNastup"
 
-Global / onLoad := {
-  (Global / onLoad).value andThen ("dependencyUpdates" :: _)
-}
-
 lazy val baseSettings = Seq(
   scalaVersion      := "3.4.2",
   semanticdbEnabled := true,
