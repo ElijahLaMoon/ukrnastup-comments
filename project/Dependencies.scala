@@ -10,7 +10,7 @@ object Dependencies {
     val jsoniter = "2.27.2"
     val telegramium = "9.77.0"
     val izumi = "1.2.11"
-    val quill = "4.8.4"
+    val quill = "4.8.5"
     val sqliteJdbc = "3.46.0.0"
     val doobie = "1.0.0-RC5" // TODO: update on stable release
     val fly4s = "1.0.7"
