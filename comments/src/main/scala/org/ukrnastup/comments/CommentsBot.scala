@@ -206,8 +206,8 @@ class CommentsBot private (
   } yield {
     val dbAdminsIds = dbAdmins.map(_.telegramId.id).toSet
     val tgAdminsAsUsers = tgAdmins.collect {
-      case a: ChatMemberAdministrator => a.user
-      case o: ChatMemberOwner         => o.user
+      case Known(a: ChatMemberAdministrator) => a.user
+      case Known(o: ChatMemberOwner)         => o.user
     }
     val tgAdminsIds = tgAdminsAsUsers.map(_.id).toSet
     if (dbAdminsIds == tgAdminsIds) {
