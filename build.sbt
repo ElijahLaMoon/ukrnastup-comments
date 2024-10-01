@@ -6,7 +6,7 @@ ThisBuild / organization     := "org.ukrnastup"
 ThisBuild / organizationName := "UkrNastup"
 
 lazy val baseSettings = Seq(
-  scalaVersion      := "3.4.2",
+  scalaVersion      := "3.5.1",
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
   tpolecatScalacOptions ++= Set(
