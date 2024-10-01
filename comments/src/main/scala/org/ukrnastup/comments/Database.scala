@@ -61,7 +61,7 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
     processAction(
       stream(bannedUsers).filter(pred).compile.toList
     )
-  def insertOrUpdateBannedUser(user: BannedUser): IO[Long] =
+  def insertOrUpdateBannedUser(user: BannedUser): IO[?] =
     processAction(
       run(
         bannedUsers
@@ -81,16 +81,15 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
     )
   def getBannedUserByTelegramId(
       telegramId: BannedUser.TelegramUserId
-  ): IO[List[BannedUser]] =
+  ): IO[Option[BannedUser]] =
     processAction(
       run(
         bannedUsers.filter(_.telegramId == lift(telegramId))
-      )
+      ).map(_.headOption)
     )
   def getBannedUserByUsername(
       username: BannedUser.TelegramUsername
-      // ): IO[List[BannedUser.TelegramUsername]] =
-  ): IO[List[BannedUser]] =
+  ): IO[Option[BannedUser]] =
     processAction(
       run(
         bannedUsers
@@ -98,15 +97,15 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
             u.telegramUsername.isDefined &&
             u.telegramUsername.exists(_ == lift(username))
           }
-      )
+      ).map(_.headOption)
     )
-  def deleteBannedUser(telegramId: BannedUser.TelegramUserId): IO[Long] =
+  def deleteBannedUser(telegramId: BannedUser.TelegramUserId): IO[?] =
     processAction(
       run(
         bannedUsers.filter(_.telegramId == lift(telegramId)).delete
       )
     )
-  def updateBannedUser(user: BannedUser): IO[Long] =
+  def updateBannedUser(user: BannedUser): IO[?] =
     processAction(
       run(
         bannedUsers
@@ -119,13 +118,13 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
     processAction(
       stream(admins).compile.toList
     )
-  def insertAdmin(admin: Admin): IO[Long] =
+  def insertAdmin(admin: Admin): IO[?] =
     processAction(
       run(
         admins.insertValue(lift(admin))
       )
     )
-  def insertAdmins(adminsList: List[Admin]): IO[List[Long]] =
+  def insertAdmins(adminsList: List[Admin]): IO[List[?]] =
     processAction(
       run(
         liftQuery(adminsList).foreach(admins.insertValue(_))
@@ -137,13 +136,13 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
         admins.filter(_.telegramId == lift(telegramId))
       )
     )
-  def deleteAdmin(telegramId: Admin.TelegramUserId): IO[Long] =
+  def deleteAdmin(telegramId: Admin.TelegramUserId): IO[?] =
     processAction(
       run(
         admins.filter(_.telegramId == lift(telegramId)).delete
       )
     )
-  def deleteAdmins(adminsList: List[Admin]): IO[List[Long]] =
+  def deleteAdmins(adminsList: List[Admin]): IO[List[?]] =
     processAction(
       run(
         liftQuery(adminsList).foreach(adminToDelete =>
@@ -151,7 +150,7 @@ object Database extends DoobieContext.SQLite(SnakeCase) {
         )
       )
     )
-  def updateAdmin(admin: Admin): IO[Long] =
+  def updateAdmin(admin: Admin): IO[?] =
     processAction(
       run(
         admins

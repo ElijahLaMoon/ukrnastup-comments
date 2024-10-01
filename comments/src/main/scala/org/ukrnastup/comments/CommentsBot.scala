@@ -23,7 +23,8 @@ import telegramium.bots.high.implicits.methodOps
 import java.time.format.DateTimeFormatter as DTF
 import scala.concurrent.duration.DurationInt
 
-import Extensions.*
+import telegramium.bots.Chat
+import telegramium.bots.User
 
 class CommentsBot private (
     commentsChatId: Long,
@@ -35,7 +36,7 @@ class CommentsBot private (
   /** Launches bot in background with dropping pending Telegram updates,
     * refreshes admins cache
     */
-  override def start(): IO[Unit] = (for {
+  override def start(): IO[Unit] = (for
     _ <- handleUpdateAdminsCommand
     _ <- sendMessage(
       ChatIntId(commentsLogsChannelId),
@@ -44,19 +45,19 @@ class CommentsBot private (
     ).exec
     _          <- api.execute(this.deleteWebhook(dropPendingUpdates = true.some))
     refCounter <- Ref[IO].of(0)
-    offsetKeeper = new LongPollBot.OffsetKeeper[IO] {
-      def getOffset              = refCounter.get
-      def setOffset(offset: Int) = refCounter.set(offset)
+    offsetKeeper: LongPollBot.OffsetKeeper[IO] = new {
+      override def getOffset              = refCounter.get
+      override def setOffset(offset: Int) = refCounter.set(offset)
     }
     _ <- this.poll(offsetKeeper)
-  } yield ()).start.void
+  yield ()).start.void
 
   def handleCommand(
       command: Command,
       message: Message,
   ): IO[String] =
     logger.info(s"handling $command with $message") *> {
-      command match {
+      command match
         case Cmd.Ban(reason) =>
           handleBanCommand(reason, message)
         case Cmd.BanWithoutReason =>
@@ -65,7 +66,6 @@ class CommentsBot private (
           handleLookupCommand(username)
         case Cmd.UpdateAdmins =>
           handleUpdateAdminsCommand
-      }
     }
 
   private def handleBanCommand(
@@ -78,10 +78,10 @@ class CommentsBot private (
         .map(_.senderChat.exists(_.id == originalChannelId))
         .getOrElse(false)
 
-    if (replyCommandWasAppliedTo.isEmpty)
+    if replyCommandWasAppliedTo.isEmpty then
       "використовуйте цю команду у відповідь на реплай людини, яку ви хочете забанити"
         .pure[IO]
-    else if (isBanAppliedWithoutAReply)
+    else if isBanAppliedWithoutAReply then
       logger.info(
         s"Admin is replying to ${replyCommandWasAppliedTo -> "this message"}"
       ) *>
@@ -116,41 +116,31 @@ class CommentsBot private (
         messageGotBannedForLink =
           s"https://t.me/c/${commentsChatId.toString.drop(4)}/${messageToBanFor.messageId}"
 
-        maybePreviouslyBannedUser: Option[BannedUser] <-
-          Db
-            .getBannedUserByTelegramId(BannedUser.TelegramUserId(idToBan))
-            .map(_.headOption)
-        wasPreviouslyBanned = maybePreviouslyBannedUser.isDefined
+        wasUserPreviouslyBanned <- Db
+          .getBannedUserByTelegramId(BannedUser.TelegramUserId(idToBan))
+          .map(_.isDefined)
 
-        genericParametersOfBan = (
-          reason,
-          bannedBy,
-          bannedById,
-          messageToBanFor
-            .text
-            .getOrElse(
-              "користувача було забанено не за текстове повідомлення"
-            ),
-          messageGotBannedForLink,
-          if (wasPreviouslyBanned) now().some else none,
-        )
+        convertChatOrUserToIoBannedUser = (_: Option[Chat | User])
+          .get // safe
+          .toBannedUser(
+            banReason = reason,
+            bannedBy = bannedBy,
+            bannedByTelegramId = bannedById,
+            messageGotBannedFor = messageToBanFor
+              .text
+              .getOrElse(
+                "користувача було забанено не за текстове повідомлення"
+              ),
+            messageGotBannedForLink = messageGotBannedForLink,
+            updatedAt = if wasUserPreviouslyBanned then now().some else none,
+          )
+          .pure[IO]
 
-        // Metals fails to infer type for whatever reason
-        userReadyToBan: BannedUser <- isSentFromChat
+        bannedUserEntity <- isSentFromChat
           .get
           .ifM(
-            ifTrue = messageToBanFor
-              .senderChat
-              .get
-              .toBannedChat
-              .tupled(genericParametersOfBan)
-              .pure[IO],
-            ifFalse = messageToBanFor
-              .from
-              .get
-              .toBannedUser
-              .tupled(genericParametersOfBan)
-              .pure[IO],
+            ifTrue = convertChatOrUserToIoBannedUser(messageToBanFor.senderChat),
+            ifFalse = convertChatOrUserToIoBannedUser(messageToBanFor.from),
           )
 
         // ban on Telegram
@@ -158,39 +148,37 @@ class CommentsBot private (
           .get
           .ifM(
             ifTrue = logger.info(
-              s"attempting to ban user (sent on behalf of chat) $userReadyToBan"
+              s"attempting to ban user (sent on behalf of chat) $bannedUserEntity"
             ) >>
               banChatSenderChat(
                 ChatIntId(commentsChatId),
-                userReadyToBan.telegramId.id,
+                bannedUserEntity.telegramId.id,
               ).exec,
             ifFalse = logger.info(
-              s"attempting to ban regular user $userReadyToBan"
+              s"attempting to ban regular user $bannedUserEntity"
             ) >> banChatMember(
               ChatIntId(commentsChatId),
-              userReadyToBan.telegramId.id,
+              bannedUserEntity.telegramId.id,
             ).exec,
           )
-        // ban in db
-        _ <- Db.insertOrUpdateBannedUser(userReadyToBan)
+        // record ban in db
+        _ <- Db.insertOrUpdateBannedUser(bannedUserEntity)
 
         // logging
         logMessage <- sendToLogsChannel {
-          import userReadyToBan.telegramName.{name => tgName}
-          import userReadyToBan.{telegramUsername => tgUsername}
-          import userReadyToBan.reason.text
-          import userReadyToBan.bannedBy.{name => adminName}
-          import userReadyToBan.{messageGotBannedFor => msgBannedFor}
-          import userReadyToBan.{messageGotBannedForLink => msgLink}
+          import bannedUserEntity.telegramName.name as tgName
+          import bannedUserEntity.telegramUsername as tgUsername
+          import bannedUserEntity.reason.text
+          import bannedUserEntity.bannedBy.name as adminName
+          import bannedUserEntity.messageGotBannedFor as msgBannedFor
+          import bannedUserEntity.messageGotBannedForLink as msgLink
 
           val user = tgUsername.fold(tgName)(tu => s"$tgName ${tu.username}")
 
           s"""
              |$adminName блокує користувача $user
              |причина: $text
-             |бан за повідомлення: ${msgBannedFor
-              .map(_.text)
-              .getOrElse("не вказано")}
+             |бан за повідомлення: ${msgBannedFor.map(_.text).getOrElse("не вказано")}
              |посилання: ${msgLink.map(_.link).getOrElse("відсутнє")}
              |""".stripMargin
         }
@@ -198,24 +186,22 @@ class CommentsBot private (
       } yield "користувача було успішно заблоковано"
   }
 
-  private def handleLookupCommand(username: String): IO[String] = for {
-    bannedUserList <- Db.getBannedUserByUsername(
-      BannedUser.TelegramUsername(username)
-    )
-  } yield
-    if (bannedUserList.isEmpty) s"@$username не в бані"
-    else {
-      val bu   = bannedUserList.head
-      val zdt  = bu.updatedAt.fold(bu.createdAt)(identity)
-      val date = zdt.format(DTF.ofPattern("dd.MM.YYYY"))
-      val time = zdt.format(DTF.ofPattern("HH:mm"))
-      s"@$username було заблоковано $date о $time: ${bu.reason}"
-    }
+  private def handleLookupCommand(username: String): IO[String] =
+    for maybeBannedUser <- Db.getBannedUserByUsername(BannedUser.TelegramUsername(username))
+    yield
+      if maybeBannedUser.isEmpty then s"@$username не в бані"
+      else {
+        val bu   = maybeBannedUser.head
+        val zdt  = bu.updatedAt.fold(bu.createdAt)(identity)
+        val date = zdt.format(DTF.ofPattern("dd.MM.YYYY"))
+        val time = zdt.format(DTF.ofPattern("HH:mm"))
+        s"@$username було заблоковано $date о $time: ${bu.reason}"
+      }
 
-  private def handleUpdateAdminsCommand: IO[String] = (for {
+  private def handleUpdateAdminsCommand: IO[String] = (for
     dbAdmins <- Db.getAdmins
     tgAdmins <- getChatAdministrators(ChatIntId(commentsChatId)).exec
-  } yield {
+  yield {
     val dbAdminsIds = dbAdmins.map(_.telegramId.id).toSet
     val tgAdminsAsUsers = tgAdmins.collect {
       case Known(a: ChatMemberAdministrator) => a.user
@@ -239,13 +225,13 @@ class CommentsBot private (
         '@', // @ added by me
       )
       val withPrecededSlashes: String => String =
-        _.map(c => if (charsToPrecedeWithSlash.contains(c)) s"\\$c" else c.toString).mkString
+        _.map(c => if charsToPrecedeWithSlash contains c then s"\\$c" else c.toString).mkString
 
       val adminToLogString = (a: Admin) =>
         a.telegramUsername
           .map(_.username)
-          .fold(
-            s"[${a.telegramName.name}](${idLink(a.telegramId.id)})"
+          .fold(ifEmpty =
+            s"[${a.telegramName.name}](${idLink(a.telegramId.id)})" // markdown link
           )(username => withPrecededSlashes(s"${a.telegramName.name} @$username"))
 
       lazy val newAdminsAsLog =
@@ -274,19 +260,17 @@ class CommentsBot private (
           )
       }
 
-      for {
-        _ <-
-          if (newAdmins.nonEmpty)
-            Db.insertAdmins(newAdmins) >>
-              sendToLogsChannel(newAdminsAsLog, Markdown2.some)
-          else IO.unit
-        _ <-
-          if (adminsToDelete.nonEmpty)
-            Db.deleteAdmins(adminsToDelete) >>
-              sendToLogsChannel(adminsToDeleteAsLog, Markdown2.some)
-          else IO.unit
+      for
+        _ <- ifOrUnit(newAdmins.nonEmpty) {
+          Db.insertAdmins(newAdmins) >>
+            sendToLogsChannel(newAdminsAsLog, Markdown2.some)
+        }
+        _ <- ifOrUnit(adminsToDelete.nonEmpty) {
+          Db.deleteAdmins(adminsToDelete) >>
+            sendToLogsChannel(adminsToDeleteAsLog, Markdown2.some)
+        }
         _ <- log
-      } yield "оновлено список адмінів"
+      yield "оновлено список адмінів"
     }
   }).flatten
 
@@ -348,8 +332,4 @@ object CommentsBot {
         }
     }
 
-  // little helper to avoid too many `IO.unit`s
-  private def ifOrUnit[A](predicate: Boolean)(thunk: => IO[A]) =
-    if (predicate) thunk.void
-    else IO.unit
 }

@@ -45,14 +45,14 @@ object Main extends IOApp {
         val commands =
           Command.visible.map(c => BotCommand(c.command, c.description))
 
-        for {
+        for
           _ <- bot.setMyCommands(commands).exec
           _ <- bot.start()
           _ <- logger.info(
             s"Bot started, current version: ${BuildInfo.version}"
           )
           ec <- Server.make.useForever.as(ExitCode.Success)
-        } yield ec
+        yield ec
       }
   }
 }
